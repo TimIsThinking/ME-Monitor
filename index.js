@@ -59,7 +59,7 @@ const timerCheck = async () => {
         console.log('stop', stop);
         checkCount = 0;
         main();
-    } else if (checkCount > timer - 1) {
+    } else if (checkCount >= timer - 1) {
         sendMessage();
     }
 
