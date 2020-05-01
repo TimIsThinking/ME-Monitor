@@ -34,4 +34,4 @@ Run the application
 
 Or run the application in dev mode with
 
-`npm run start-dev`
+`npm run start:dev`
