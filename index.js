@@ -7,7 +7,8 @@ const sendDiscordMessage = require('./src/utils/discordWebhook');
 
 const serviceName = process.env.SERVICE_NAME;
 let checkCount = 0;
-let timer = 360;
+const timer = 360;
+const minute = 60000;
 
 const sendMessage = async () => {
 
@@ -46,24 +47,20 @@ const sendMessage = async () => {
 };
 
 const timerCheck = async () => {
+    console.clear();
     let status = await winsc.status(serviceName);
 
     if (status === "STOPPED") {
         main();
         checkCount = 0;
-    }
-
-    if (checkCount > timer - 1) {
-        sendMessage();
-    }
-
-    if (checkCount > timer) {
+    } else if (checkCount >= timer) {
         console.log('Attempting to restart service...');
-        let stop = await winsc.stop(serviceName);
+        const stop = await winsc.stop(serviceName);
         console.log('stop', stop);
         checkCount = 0;
-        await wait(60000);
         main();
+    } else if (checkCount > timer - 1) {
+        sendMessage();
     }
 
     console.log(`Server has been up for ${checkCount} minutes, next restart in ${timer - checkCount} minutes`);
@@ -71,6 +68,7 @@ const timerCheck = async () => {
 };
 
 const main = async () => {
+    await wait(minute);
     const doesExists = await winsc.exists(serviceName);
 
     if (doesExists) {
@@ -78,7 +76,7 @@ const main = async () => {
         console.log('status', status);
         if (status === "STOPPED") {
             const start = await winsc.start(serviceName);
-            console.log('start', start);
+            start && console.log('Server is starting...');
         } else {
             console.log('Service not stopped!');
         }
@@ -87,4 +85,7 @@ const main = async () => {
     }
 };
 
-setInterval(timerCheck, 60000);
+timerCheck();
+setInterval(timerCheck, minute);
+
+console.log('Started ME Monitor');
