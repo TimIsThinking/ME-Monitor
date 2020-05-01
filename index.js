@@ -1,17 +1,13 @@
 require('dotenv').config()
 const winsc = require('winsc');
 const fetch = require('node-fetch');
+const wait = require('./src/utils/wait');
 const authorizeRemoteAPI = require('./src/utils/authorizeRemoteAPI');
+const sendDiscordMessage = require('./src/utils/discordWebhook');
 
 const serviceName = process.env.SERVICE_NAME;
-// const timedRestart = true;
 let checkCount = 0;
 let timer = 360;
-let timeToRestart = 360;
-
-const wait = async ms => {
-    setTimeout(() => { }, ms)
-};
 
 const sendMessage = async () => {
 
@@ -27,12 +23,26 @@ const sendMessage = async () => {
         },
         body: JSON.stringify({
             RecipientIdentityId: null,
-            Message: "This is a test message from node monitor"
+            Message: "Server restarting..."
         })
     };
 
-    const response = await fetch(url, options);
-    console.log('response', response.status);
+    try {
+        const response = await fetch(url, options);
+        if (response.status === 204) {
+            console.log('Sent server message');
+        } else {
+            console.log('Failed to send server message');
+        }
+    } catch (e) {
+        console.log('Failed to send server message: ', e);
+    }
+
+    try {
+        sendDiscordMessage();
+    } catch (e) {
+        console.log('Failed to send discord message: ', e);
+    }
 };
 
 const timerCheck = async () => {
@@ -43,29 +53,31 @@ const timerCheck = async () => {
         checkCount = 0;
     }
 
+    if (checkCount > timer - 1) {
+        sendMessage();
+    }
+
     if (checkCount > timer) {
         console.log('Attempting to restart service...');
-        sendMessage();
         let stop = await winsc.stop(serviceName);
         console.log('stop', stop);
         checkCount = 0;
-        timeToRestart = timer;
         await wait(60000);
         main();
     }
 
-    console.log(checkCount);
+    console.log(`Server has been up for ${checkCount} minutes, next restart in ${timer - checkCount} minutes`);
     checkCount++;
 };
 
 const main = async () => {
-    let doesExists = await winsc.exists(serviceName);
+    const doesExists = await winsc.exists(serviceName);
 
     if (doesExists) {
-        let status = await winsc.status(serviceName);
+        const status = await winsc.status(serviceName);
         console.log('status', status);
         if (status === "STOPPED") {
-            let start = await winsc.start(serviceName);
+            const start = await winsc.start(serviceName);
             console.log('start', start);
         } else {
             console.log('Service not stopped!');
@@ -75,9 +87,4 @@ const main = async () => {
     }
 };
 
-// main();
-
-timerCheck();
 setInterval(timerCheck, 60000);
-
-// sendMessage();

@@ -14,6 +14,8 @@ Create a .env file in your project directory and setup environment variables
 SERVICE_NAME:             Your Medieval Engineers server windows service name
 REMOTE_API_URL:           URL to access your Medieval Engineers Remote API
 API_KEY:                  Medieval Engineers Remote API Key
+DISCORD_WEBHOOK_ID:       Your Discord webhook ID
+DISCORD_WEBHOOK_TOKEN:    Your Discord webhook token
 ```
 
 ## Install
