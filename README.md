@@ -7,6 +7,8 @@ Features include
 
 ## Prerequisites
 
+[Node.js](https://nodejs.org/en/) >= 12
+
 Create a .env file in your project directory and setup environment variables
 .env.example contains the used variable names
 

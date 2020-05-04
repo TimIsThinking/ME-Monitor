@@ -30,9 +30,7 @@ const sendMessage = async () => {
 
     try {
         const response = await fetch(url, options);
-        if (response.status === 204) {
-            console.log('Sent server message');
-        } else {
+        if (response.status !== 204) {
             console.log('Failed to send server message');
         }
     } catch (e) {
@@ -59,7 +57,7 @@ const timerCheck = async () => {
         console.log('stop', stop);
         checkCount = 0;
         main();
-    } else if (checkCount >= timer - 1) {
+    } else if (checkCount === timer - 1) {
         sendMessage();
     }
 
